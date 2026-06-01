@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportZone Fantasy</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --panel: #111827;
+    --panel2: #1a2235;
+    --border: #1e2d45;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --gold: #ffd700;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* NAV */
+  nav { background: var(--panel); border-bottom: 1px solid var(--border); padding: 0 20px; display: flex; align-items: center; gap: 8px; height: 56px; position: sticky; top: 0; z-index: 100; }
+  .logo { font-size: 1.3rem; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-right: 12px; }
+  nav button { background: none; border: none; color: var(--muted); padding: 8px 14px; cursor: pointer; border-radius: 8px; font-size: 0.85rem; font-weight: 600; transition: all .2s; white-space: nowrap; }
+  nav button:hover, nav button.active { background: var(--panel2); color: var(--accent); }
+  .currency-badge { margin-left: auto; background: linear-gradient(135deg, #1a2235, #0a0e1a); border: 1px solid var(--yellow); border-radius: 20px; padding: 6px 14px; font-weight: 700; color: var(--yellow); font-size: 0.9rem; white-space: nowrap; }
+
+  /* PAGES */
+  .page { display: none; padding: 24px 20px; max-width: 1100px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* CARDS */
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+  .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .badge { background: var(--accent2); color: white; border-radius: 6px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; }
+  .badge.green { background: var(--green); }
+  .badge.yellow { background: var(--yellow); color: #000; }
+  .badge.red { background: var(--red); }
+
+  /* BUTTONS */
+  .btn { border: none; border-radius: 10px; padding: 10px 20px; font-weight: 700; cursor: pointer; font-size: 0.9rem; transition: all .2s; }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), #0090b3); color: #000; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(0,212,255,0.3); }
+  .btn-secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-purple { background: linear-gradient(135deg, var(--accent2), #5b21b6); color: white; }
+  .btn-gold { background: linear-gradient(135deg, #ffd700, #f59e0b); color: #000; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+  /* HOME */
+  .hero { background: linear-gradient(135deg, #0d1b2e, #1a0a2e); border: 1px solid var(--border); border-radius: 18px; padding: 32px; text-align: center; margin-bottom: 20px; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(ellipse, rgba(0,212,255,0.05) 0%, transparent 70%); pointer-events: none; }
+  .hero h1 { font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+  .hero p { color: var(--muted); margin-bottom: 20px; }
+  .week-badge { display: inline-block; background: var(--panel); border: 2px solid var(--accent); border-radius: 30px; padding: 8px 24px; font-weight: 700; color: var(--accent); margin-bottom: 16px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
+  .stat-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+  .stat-box .val { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+  .stat-box .lbl { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+  /* TEAM BUILDER */
+  .pitch { background: radial-gradient(ellipse at center, #1a4a1a 0%, #0d2d0d 100%); border: 2px solid #2d5a2d; border-radius: 16px; padding: 20px; min-height: 380px; position: relative; }
+  .pitch-lines { position: absolute; inset: 20px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; pointer-events: none; }
+  .pitch-lines::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,0.1); }
+  .formation-row { display: flex; justify-content: center; gap: 12px; margin: 10px 0; position: relative; z-index: 1; }
+  .player-slot { width: 70px; text-align: center; cursor: pointer; }
+  .player-avatar { width: 52px; height: 52px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); background: var(--panel2); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 4px; transition: all .2s; position: relative; }
+  .player-slot.filled .player-avatar { border-color: var(--accent); background: #0a1929; }
+  .player-slot.captain .player-avatar::after { content: 'C'; position: absolute; bottom: -4px; right: -4px; background: var(--gold); color: #000; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+  .player-slot:hover .player-avatar { border-color: var(--accent); transform: scale(1.05); }
+  .player-slot .slot-name { font-size: 0.65rem; color: var(--text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .player-slot .slot-pts { font-size: 0.7rem; color: var(--accent); font-weight: 700; }
+  .slot-empty { font-size: 0.65rem; color: var(--muted); }
+  .pos-label { font-size: 0.6rem; background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; color: var(--muted); margin-bottom: 2px; }
+
+  /* PLAYER CARDS */
+  .player-card { background: var(--panel2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; cursor: pointer; transition: all .2s; position: relative; }
+  .player-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .player-card .pc-flag { font-size: 1.4rem; }
+  .player-card .pc-name { font-weight: 700; font-size: 0.9rem; margin: 6px 0 2px; }
+  .player-card .pc-club { font-size: 0.75rem; color: var(--muted); }
+  .player-card .pc-pts { font-size: 1.3rem; font-weight: 900; color: var(--accent); margin-top: 8px; }
+  .player-card .pc-pos { position: absolute; top: 8px; left: 8px; background: var(--accent2); color: white; border-radius: 6px; padding: 2px 7px; font-size: 0.65rem; font-weight: 700; }
+  .player-card .pc-if { position: absolute; top: 8px; right: 8px; background: var(--yellow); color: #000; border-radius: 6px; padding: 2px 7px; font-size: 0.65rem; font-weight: 700; }
+
+  /* STORE / PACKS */
+  .pack-card { background: var(--panel2); border-radius: 16px; padding: 20px; text-align: center; border: 2px solid transparent; transition: all .3s; cursor: pointer; position: relative; overflow: hidden; }
+  .pack-card::before { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .3s; }
+  .pack-card.gold-pack::before { background: radial-gradient(ellipse, rgba(255,215,0,0.08) 0%, transparent 70%); }
+  .pack-card.purple-pack::before { background: radial-gradient(ellipse, rgba(124,58,237,0.1) 0%, transparent 70%); }
+  .pack-card.blue-pack::before { background: radial-gradient(ellipse, rgba(0,212,255,0.08) 0%, transparent 70%); }
+  .pack-card.green-pack::before { background: radial-gradient(ellipse, rgba(16,185,129,0.08) 0%, transparent 70%); }
+  .pack-card:hover::before { opacity: 1; }
+  .pack-card.gold-pack { border-color: #ffd700; }
+  .pack-card.purple-pack { border-color: var(--accent2); }
+  .pack-card.blue-pack { border-color: var(--accent); }
+  .pack-card.green-pack { border-color: var(--green); }
+  .pack-icon { font-size: 3rem; margin-bottom: 10px; display: block; }
+  .pack-name { font-weight: 800; font-size: 1rem; margin-bottom: 6px; }
+  .pack-desc { font-size: 0.78rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
+  .pack-cost { font-weight: 900; font-size: 1.1rem; color: var(--yellow); margin-bottom: 12px; }
+
+  /* PACK OPENING MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 32px; max-width: 500px; width: 90%; text-align: center; position: relative; }
+  .modal h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; }
+  .modal p { color: var(--muted); margin-bottom: 24px; font-size: 0.9rem; }
+  .pack-opening { perspective: 800px; }
+  .pack-card-anim { width: 140px; height: 200px; margin: 0 auto 20px; position: relative; transform-style: preserve-3d; transition: transform .8s cubic-bezier(0.4,0,0.2,1); cursor: pointer; }
+  .pack-card-anim.flipped { transform: rotateY(180deg); }
+  .pack-face, .pack-back { position: absolute; inset: 0; border-radius: 14px; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .pack-back { background: linear-gradient(135deg, var(--panel2), var(--panel)); border: 2px solid var(--border); font-size: 3rem; }
+  .pack-face { background: linear-gradient(135deg, #0d1b2e, #1a0a2e); border: 2px solid var(--accent); transform: rotateY(180deg); padding: 16px; }
+  .pack-face .pf-flag { font-size: 2.5rem; }
+  .pack-face .pf-pos { background: var(--accent2); color: white; border-radius: 6px; padding: 3px 10px; font-size: 0.75rem; font-weight: 700; margin: 8px 0; }
+  .pack-face .pf-name { font-weight: 800; font-size: 1rem; }
+  .pack-face .pf-club { font-size: 0.75rem; color: var(--muted); margin: 4px 0; }
+  .pack-face .pf-pts { font-size: 2rem; font-weight: 900; color: var(--accent); }
+  .pick-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .pick-btn { background: var(--panel2); border: 2px solid var(--border); border-radius: 12px; padding: 14px 10px; cursor: pointer; transition: all .2s; font-size: 0.85rem; font-weight: 600; color: var(--text); }
+  .pick-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* MINIGAMES */
+  .game-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .game-tab { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 16px; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--muted); transition: all .2s; }
+  .game-tab.active { background: var(--accent2); border-color: var(--accent2); color: white; }
+  .minigame { display: none; }
+  .minigame.active { display: block; }
+
+  /* XG GAME */
+  .xg-match { background: var(--panel2); border-radius: 14px; padding: 24px; text-align: center; margin-bottom: 16px; }
+  .xg-teams { display: flex; align-items: center; justify-content: center; gap: 20px; font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+  .xg-teams .team { display: flex; align-items: center; gap: 8px; }
+  .xg-vs { color: var(--muted); font-size: 1.2rem; }
+  .xg-shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0; }
+  .xg-shot { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
+  .xg-shot .xg-val { font-size: 1.3rem; font-weight: 800; color: var(--yellow); }
+  .xg-shot .xg-lbl { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+  .xg-slider-wrap { margin: 20px 0; }
+  .xg-slider-wrap label { display: block; margin-bottom: 8px; font-size: 0.85rem; color: var(--muted); }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .xg-answer { font-size: 0.9rem; font-weight: 700; color: var(--accent); text-align: center; margin-bottom: 4px; }
+
+  /* TIKI TAKA TOE */
+  .ttt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--border); border-radius: 12px; overflow: hidden; max-width: 420px; margin: 0 auto 16px; }
+  .ttt-header { background: var(--panel2); display: flex; align-items: center; justify-content: center; padding: 12px 8px; font-size: 0.8rem; font-weight: 700; text-align: center; min-height: 56px; border-bottom: 2px solid var(--border); }
+  .ttt-cell { background: var(--panel2); min-height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all .2s; border: 2px solid transparent; position: relative; }
+  .ttt-cell:hover:not(.taken) { background: #1e2d45; border-color: var(--accent); }
+  .ttt-cell.taken { cursor: default; }
+  .ttt-cell .cell-emoji { font-size: 1.8rem; }
+  .ttt-cell .cell-name { font-size: 0.7rem; font-weight: 600; text-align: center; margin-top: 4px; }
+  .ttt-cell .cell-mark { position: absolute; top: 4px; right: 4px; font-size: 1rem; }
+  .ttt-status { text-align: center; padding: 12px; background: var(--panel2); border-radius: 10px; margin-bottom: 12px; font-weight: 600; }
+  .ttt-input-row { display: flex; gap: 8px; }
+  .ttt-input { flex: 1; background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text); font-size: 0.9rem; }
+  .ttt-input:focus { outline: none; border-color: var(--accent); }
+  .ttt-suggestions { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; max-height: 150px; overflow-y: auto; }
+  .ttt-suggestion { padding: 10px 14px; cursor: pointer; font-size: 0.85rem; transition: background .1s; }
+  .ttt-suggestion:hover { background: var(--panel2); color: var(--accent); }
+
+  /* SCORE PREDICTOR */
+  .sp-match { background: var(--panel2); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+  .sp-teams-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .sp-team { text-align: center; flex: 1; }
+  .sp-team .sp-flag { font-size: 2rem; }
+  .sp-team .sp-name { font-weight: 700; font-size: 0.9rem; margin-top: 4px; }
+  .sp-vs { font-size: 1.5rem; color: var(--muted); font-weight: 900; }
+  .sp-score-input { display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .sp-score-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: var(--panel); color: var(--text); font-size: 1.2rem; cursor: pointer; font-weight: 700; }
+  .sp-score-val { font-size: 2rem; font-weight: 900; min-width: 32px; text-align: center; }
+  .sp-dash { font-size: 1.5rem; color: var(--muted); padding: 0 4px; }
+
+  /* GUESS THE PLAYER */
+  .gtp-silhouette { width: 120px; height: 120px; background: var(--panel2); border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 4rem; filter: brightness(0) invert(0.1); border: 3px solid var(--border); overflow: hidden; transition: filter .5s; }
+  .gtp-silhouette.revealed { filter: none; }
+  .gtp-hints { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; justify-content: center; }
+  .gtp-hint { background: var(--panel2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 14px; font-size: 0.8rem; }
+  .gtp-hint.visible { border-color: var(--accent); color: var(--accent); }
+  .gtp-input-row { display: flex; gap: 8px; }
+  .gtp-input { flex: 1; background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text); font-size: 0.9rem; }
+  .gtp-input:focus { outline: none; border-color: var(--accent); }
+
+  /* LEADERBOARD */
+  .lb-row { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; background: var(--panel2); border: 1px solid var(--border); transition: all .2s; }
+  .lb-row:hover { border-color: var(--accent); }
+  .lb-rank { font-size: 1.1rem; font-weight: 900; min-width: 28px; text-align: center; }
+  .lb-rank.gold { color: var(--gold); }
+  .lb-rank.silver { color: #c0c0c0; }
+  .lb-rank.bronze { color: #cd7f32; }
+  .lb-avatar { font-size: 1.5rem; }
+  .lb-name { flex: 1; font-weight: 700; }
+  .lb-pts { font-weight: 800; color: var(--accent); font-size: 1rem; }
+  .lb-change { font-size: 0.75rem; font-weight: 700; }
+  .lb-change.up { color: var(--green); }
+  .lb-change.down { color: var(--red); }
+  .lb-me { border-color: var(--accent2) !important; background: rgba(124,58,237,0.1); }
+
+  /* LEAGUE SELECTOR */
+  .league-pill { display: inline-flex; align-items: center; gap: 6px; background: var(--panel2); border: 2px solid var(--border); border-radius: 20px; padding: 6px 16px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin: 4px; transition: all .2s; }
+  .league-pill.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.08); }
+
+  /* NOTIFICATION */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 20px; z-index: 9999; font-weight: 600; font-size: 0.9rem; transform: translateX(200%); transition: transform .3s; max-width: 300px; }
+  .toast.show { transform: translateX(0); }
+  .toast.success { border-color: var(--green); color: var(--green); }
+  .toast.error { border-color: var(--red); color: var(--red); }
+  .toast.info { border-color: var(--accent); color: var(--accent); }
+
+  /* OBJECTIVES */
+  .obj-row { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--panel2); border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border); }
+  .obj-icon { font-size: 1.4rem; min-width: 36px; text-align: center; }
+  .obj-info { flex: 1; }
+  .obj-name { font-weight: 700; font-size: 0.9rem; }
+  .obj-desc { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+  .obj-progress { height: 6px; background: var(--panel); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+  .obj-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; transition: width .5s; }
+  .obj-reward { text-align: right; }
+  .obj-reward .reward-val { font-weight: 800; color: var(--yellow); font-size: 0.9rem; }
+  .obj-reward .reward-lbl { font-size: 0.7rem; color: var(--muted); }
+  .obj-claim { margin-top: 4px; }
+
+  /* POTW */
+  .potw-card { background: linear-gradient(135deg, #1a1a0a, #2a2a0a); border: 2px solid var(--gold); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 16px; position: relative; overflow: hidden; }
+  .potw-card::before { content: '⭐ PLAYER OF THE WEEK ⭐'; position: absolute; top: 10px; left: 0; right: 0; font-size: 0.7rem; font-weight: 800; color: var(--gold); letter-spacing: 2px; }
+  .potw-card .potw-emoji { font-size: 4rem; margin: 20px 0 8px; }
+  .potw-card .potw-name { font-size: 1.3rem; font-weight: 900; }
+  .potw-card .potw-bonus { color: var(--gold); font-weight: 800; margin-top: 6px; }
+
+  /* TRANSFER WINDOW */
+  .transfer-banner { background: linear-gradient(135deg, #1a0a0a, #2a0a0a); border: 2px solid var(--red); border-radius: 12px; padding: 14px 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+  .transfer-banner.open { background: linear-gradient(135deg, #0a1a0a, #0a2a0a); border-color: var(--green); }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .hero h1 { font-size: 1.6rem; }
+    nav button span { display: none; }
+  }
+  @media (max-width: 420px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--panel); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .section-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  .text-muted { color: var(--muted); font-size: 0.85rem; }
+  .text-center { text-align: center; }
+  .mt-8 { margin-top: 8px; }
+  .mt-16 { margin-top: 16px; }
+  .flex-center { display: flex; align-items: center; justify-content: center; gap: 10px; }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">⚽ SportZone</div>
+  <button class="active" onclick="showPage('home')" id="nav-home">🏠 <span>Home</span></button>
+  <button onclick="showPage('team')" id="nav-team">👕 <span>Team</span></button>
+  <button onclick="showPage('store')" id="nav-store">🎁 <span>Store</span></button>
+  <button onclick="showPage('games')" id="nav-games">🎮 <span>Games</span></button>
+  <button onclick="showPage('leagues')" id="nav-leagues">🏆 <span>Leagues</span></button>
+  <div class="currency-badge" id="currency-display">💰 100.0M</div>
+</nav>
+
+<!-- ===== HOME PAGE ===== -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="week-badge">📅 Gameweek 1 — Active</div>
+    <h1>SportZone Fantasy</h1>
+    <p>Build your squad, open packs, play daily games and climb the leaderboard</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="showPage('team')">🧩 Build Team</button>
+      <button class="btn btn-purple" onclick="showPage('store')">🎁 Open Packs</button>
+      <button class="btn btn-secondary" onclick="showPage('games')">🎮 Play Games</button>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="val" id="home-pts">0</div><div class="lbl">Total Points</div></div>
+      <div class="stat-box"><div class="val" id="home-rank">#247</div><div class="lbl">Global Rank</div></div>
+      <div class="stat-box"><div class="val" id="home-currency">100M</div><div class="lbl">Currency</div></div>
+    </div>
+  </div>
+
+  <!-- POTW -->
+  <div class="potw-card">
+    <div class="potw-emoji">🇳🇴</div>
+    <div class="potw-name">Erling Haaland</div>
+    <div class="text-muted" style="margin:4px 0">Manchester City • FWD</div>
+    <div class="potw-bonus">+2 Bonus Points This Week</div>
+  </div>
+
+  <!-- TRANSFER WINDOW STATUS -->
+  <div class="transfer-banner open">
+    <span style="font-size:1.5rem">🟢</span>
+    <div>
+      <div style="font-weight:700">Transfer Window Open</div>
+      <div class="text-muted" style="font-size:0.8rem">Make your picks before Gameweek 2 locks — unlimited transfers active</div>
+    </div>
+    <button class="btn btn-secondary" style="margin-left:auto" onclick="showPage('team')">Manage</button>
+  </div>
+
+  <!-- DAILY OBJECTIVES -->
+  <div class="card">
+    <div class="card-title">🎯 Daily Objectives <span class="badge yellow">Refreshes in 14h 22m</span></div>
+    <div id="objectives-list"></div>
+  </div>
+
+  <!-- QUICK PLAY -->
+  <div class="card">
+    <div class="card-title">⚡ Quick Play</div>
+    <div class="grid-3">
+      <button class="btn btn-secondary" onclick="showPage('games');switchGame('xg')" style="padding:14px 10px;text-align:center">
+        <div style="font-size:1.5rem;margin-bottom:6px">📊</div>
+        <div style="font-size:0.8rem">Guess the xG</div>
+        <div style="color:var(--yellow);font-size:0.75rem;margin-top:4px">+500 coins</div>
+      </button>
+      <button class="btn btn-secondary" onclick="showPage('games');switchGame('ttt')" style="padding:14px 10px;text-align:center">
+        <div style="font-size:1.5rem;margin-bottom:6px">⚔️</div>
+        <div style="font-size:0.8rem">Tiki-Taka Toe</div>
+        <div style="color:var(--yellow);font-size:0.75rem;margin-top:4px">+1000 coins</div>
+      </button>
+      <button class="btn btn-secondary" onclick="showPage('games');switchGame('sp')" style="padding:14px 10px;text-align:center">
+        <div style="font-size:1.5rem;margin-bottom:6px">🎯</div>
+        <div style="font-size:0.8rem">Score Predictor</div>
+        <div style="color:var(--yellow);font-size:0.75rem;margin-top:4px">+750 coins</div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TEAM PAGE ===== -->
+<div class="page" id="page-team">
+  <div class="section-title">👕 My Squad</div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:0.8rem;color:var(--muted)">Formation</div>
+        <select id="formation-select" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:0.9rem;margin-top:4px" onchange="renderPitch()">
+          <option value="4-3-3">4-3-3</option>
+          <option value="4-4-2">4-4-2</option>
+          <option value="3-5-2">3-5-2</option>
+          <option value="4-2-3-1">4-2-3-1</option>
+          <option value="5-3-2">5-3-2</option>
+        </select>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div style="font-size:0.8rem;color:var(--muted)">Total Points</div>
+        <div style="font-size:1.3rem;font-weight:800;color:var(--accent)" id="squad-pts">0 pts</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pitch">
+    <div class="pitch-lines"></div>
+    <div id="pitch-container"></div>
+  </div>
+
+  <div class="card mt-16">
+    <div class="card-title">📋 My Players <span class="badge" id="squad-count">0/15</span></div>
+    <div class="grid-4" id="player-list"></div>
+  </div>
+
+  <!-- Player Pick Modal Inline -->
+  <div class="card" id="player-pick-panel" style="display:none">
+    <div class="card-title">🔍 Pick a Player — <span id="pick-position-label">FWD</span></div>
+    <div class="grid-4" id="pick-player-grid"></div>
+    <button class="btn btn-secondary mt-16" onclick="document.getElementById('player-pick-panel').style.display='none'">Cancel</button>
+  </div>
+</div>
+
+<!-- ===== STORE PAGE ===== -->
+<div class="page" id="page-store">
+  <div class="section-title">🎁 Pack Store <span class="badge yellow">No Pay-to-Win</span></div>
+  <div class="text-muted" style="margin-bottom:20px">Earn coins through minigames and objectives. Every pack gives you a 1-of-2 choice.</div>
+
+  <div class="grid-2" id="pack-grid"></div>
+
+  <div class="card mt-16">
+    <div class="card-title">📦 Pack History</div>
+    <div id="pack-history">
+      <div class="text-muted text-center" style="padding:20px">No packs opened yet. Go earn some coins!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== GAMES PAGE ===== -->
+<div class="page" id="page-games">
+  <div class="section-title">🎮 Daily Minigames</div>
+  <div class="game-tabs">
+    <div class="game-tab active" onclick="switchGame('xg')" id="tab-xg">📊 Guess xG</div>
+    <div class="game-tab" onclick="switchGame('ttt')" id="tab-ttt">⚔️ Tiki-Taka Toe</div>
+    <div class="game-tab" onclick="switchGame('sp')" id="tab-sp">🎯 Score Predictor</div>
+    <div class="game-tab" onclick="switchGame('gtp')" id="tab-gtp">👤 Guess the Player</div>
+    <div class="game-tab" onclick="switchGame('gtc')" id="tab-gtc">🏟️ Guess the Club</div>
+  </div>
+
+  <!-- XG GAME -->
+  <div class="minigame active" id="game-xg">
+    <div class="card">
+      <div class="card-title">📊 Guess the xG <span class="badge green">+500 coins</span></div>
+      <div class="xg-match">
+        <div class="xg-teams">
+          <div class="team">🏴󠁧󠁢󠁥󠁮󠁧󠁿 <span id="xg-home-team">Manchester City</span></div>
+          <div class="xg-vs">vs</div>
+          <div class="team"><span id="xg-away-team">Arsenal</span> 🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+        </div>
+        <div style="color:var(--muted);font-size:0.8rem" id="xg-result-display">Final score: <strong id="xg-score">3 - 1</strong></div>
+      </div>
+      <div class="xg-shots">
+        <div class="xg-shot"><div class="xg-val" id="xg-shots-home">14</div><div class="xg-lbl">Home Shots</div></div>
+        <div class="xg-shot"><div class="xg-val" id="xg-sot-home">7</div><div class="xg-lbl">On Target</div></div>
+        <div class="xg-shot"><div class="xg-val" id="xg-poss">58%</div><div class="xg-lbl">Possession</div></div>
+        <div class="xg-shot"><div class="xg-val" id="xg-shots-away">9</div><div class="xg-lbl">Away Shots</div></div>
+        <div class="xg-shot"><div class="xg-val" id="xg-sot-away">3</div><div class="xg-lbl">On Target</div></div>
+        <div class="xg-shot"><div class="xg-val" id="xg-corners">7</div><div class="xg-lbl">Corners</div></div>
+      </div>
+      <div class="xg-slider-wrap">
+        <label>Home xG: <strong id="xg-home-val">1.5</strong></label>
+        <input type="range" min="0" max="5" step="0.1" value="1.5" oninput="document.getElementById('xg-home-val').textContent=parseFloat(this.value).toFixed(1)" id="xg-home-slider">
+      </div>
+      <div class="xg-slider-wrap">
+        <label>Away xG: <strong id="xg-away-val">0.8</strong></label>
+        <input type="range" min="0" max="5" step="0.1" value="0.8" oninput="document.getElementById('xg-away-val').textContent=parseFloat(this.value).toFixed(1)" id="xg-away-slider">
+      </div>
+      <div id="xg-answer-display"></div>
+      <button class="btn btn-primary" id="xg-submit-btn" onclick="submitXG()" style="width:100%">Submit Guess</button>
+    </div>
+  </div>
+
+  <!-- TIKI TAKA TOE -->
+  <div class="minigame" id="game-ttt">
+    <div class="card">
+      <div class="card-title">⚔️ Tiki-Taka Toe <span class="badge green">+1000 coins to winner</span></div>
+      <div class="text-muted" style="margin-bottom:14px;font-size:0.8rem">Name a player who fits both the row AND column category. Each player can only be used once per game.</div>
+      <div class="ttt-status" id="ttt-status">Your turn (⭕)</div>
+      <div class="ttt-grid" id="ttt-grid"></div>
+      <div style="margin-top:12px" id="ttt-input-area">
+        <div class="ttt-input-row">
+          <input class="ttt-input" type="text" id="ttt-input" placeholder="Type a player name..." oninput="tttSuggest()" autocomplete="off">
+          <button class="btn btn-primary" onclick="tttSubmit()">Play</button>
+        </div>
+        <div class="ttt-suggestions" id="ttt-suggestions" style="display:none"></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="resetTTT()" style="font-size:0.8rem">🔄 New Game</button>
+        <div class="text-muted" style="align-self:center;font-size:0.8rem" id="ttt-used-count">Used players: 0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCORE PREDICTOR -->
+  <div class="minigame" id="game-sp">
+    <div class="card">
+      <div class="card-title">🎯 Score Predictor <span class="badge green">+750 coins</span></div>
+      <div id="sp-matches"></div>
+      <button class="btn btn-primary" id="sp-submit" onclick="submitScores()" style="width:100%">Submit Predictions</button>
+    </div>
+  </div>
+
+  <!-- GUESS THE PLAYER -->
+  <div class="minigame" id="game-gtp">
+    <div class="card">
+      <div class="card-title">👤 Guess the Player <span class="badge green">+600 coins</span></div>
+      <div class="gtp-silhouette" id="gtp-silhouette">❓</div>
+      <div class="text-center text-muted" style="margin-bottom:8px" id="gtp-hint-label">Hints revealed: 0/4</div>
+      <div class="gtp-hints" id="gtp-hints"></div>
+      <div style="margin-top:12px">
+        <div class="gtp-input-row">
+          <input class="gtp-input" type="text" id="gtp-input" placeholder="Type player name..." autocomplete="off" oninput="gtpSuggest()">
+          <button class="btn btn-primary" onclick="submitGTP()">Guess</button>
+        </div>
+        <div class="ttt-suggestions" id="gtp-suggestions" style="display:none"></div>
+      </div>
+      <div id="gtp-result" style="margin-top:12px;text-align:center;font-weight:700"></div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn btn-secondary" onclick="revealGTPHint()" id="gtp-hint-btn" style="font-size:0.8rem">💡 Reveal Hint (-100 coins)</button>
+        <button class="btn btn-secondary" onclick="newGTPPlayer()" style="font-size:0.8rem">🔄 New Player</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GUESS THE CLUB -->
+  <div class="minigame" id="game-gtc">
+    <div class="card">
+      <div class="card-title">🏟️ Guess the Club <span class="badge green">+500 coins</span></div>
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:5rem" id="gtc-badge">🔵</div>
+        <div class="text-muted" style="font-size:0.85rem">Identify the club from their badge/color</div>
+      </div>
+      <div class="grid-2" id="gtc-options"></div>
+      <div id="gtc-result" style="margin-top:12px;text-align:center;font-weight:700"></div>
+      <button class="btn btn-secondary" onclick="newGTCClub()" style="margin-top:12px;width:100%;font-size:0.8rem">🔄 New Club</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LEAGUES PAGE ===== -->
+<div class="page" id="page-leagues">
+  <div class="section-title">🏆 Leagues & Leaderboard</div>
+
+  <div class="card">
+    <div class="card-title">⚽ My Leagues</div>
+    <div style="margin-bottom:14px">
+      <div class="text-muted" style="font-size:0.85rem;margin-bottom:8px">Select which fantasy leagues to compete in:</div>
+      <div id="league-selector"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <div class="card-title" style="margin-bottom:0">🏅 Leaderboard</div>
+      <select id="lb-filter" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:0.85rem;margin-left:auto" onchange="renderLeaderboard()">
+        <option value="global">🌍 Global</option>
+        <option value="pl">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</option>
+        <option value="laliga">🇪🇸 La Liga</option>
+        <option value="bundesliga">🇩🇪 Bundesliga</option>
+        <option value="ligue1">🇫🇷 Ligue 1</option>
+        <option value="friends">👥 Friends Mini League</option>
+      </select>
+    </div>
+    <div id="leaderboard-list"></div>
+  </div>
+</div>
+
+<!-- PACK OPENING MODAL -->
+<div class="modal-overlay" id="pack-modal">
+  <div class="modal">
+    <h2 id="modal-pack-name">Opening Pack...</h2>
+    <p id="modal-pack-desc">Click the pack to reveal your 2 choices</p>
+    <div class="pack-opening">
+      <div class="pack-card-anim" id="pack-anim" onclick="flipPack()">
+        <div class="pack-back">📦</div>
+        <div class="pack-face" id="pack-face-content">
+          <div class="pf-flag" id="pf-flag">🇵🇹</div>
+          <div class="pf-pos" id="pf-pos">FWD</div>
+          <div class="pf-name" id="pf-name">Player</div>
+          <div class="pf-club" id="pf-club">Club</div>
+          <div class="pf-pts" id="pf-pts">0</div>
+        </div>
+      </div>
+      <div id="pack-pick-area" style="display:none">
+        <p style="margin-bottom:10px;font-size:0.9rem;color:var(--muted)">Choose 1 of 2:</p>
+        <div class="pick-choice" id="pick-choice"></div>
+      </div>
+    </div>
+    <button class="btn btn-secondary" onclick="closePackModal()" style="width:100%;margin-top:8px">Close</button>
+  </div>
+</div>
+
+<script>
+// ========== STATE ==========
+let state = {
+  currency: 100000000,
+  points: 0,
+  squad: Array(15).fill(null),
+  packHistory: [],
+  activeLeagues: ['pl'],
+  objectives: [
+    { id: 1, icon: '📊', name: 'xG Analyst', desc: 'Guess xG within 0.3 of actual', reward: 500, progress: 0, max: 1, done: false },
+    { id: 2, icon: '⚔️', name: 'Tiki-Taka Master', desc: 'Win a Tiki-Taka Toe game', reward: 1000, progress: 0, max: 1, done: false },
+    { id: 3, icon: '🎯', name: 'Score Seer', desc: 'Predict an exact score', reward: 750, progress: 0, max: 1, done: false },
+    { id: 4, icon: '👤', name: 'Player Expert', desc: 'Guess 3 players correctly', reward: 600, progress: 0, max: 3, done: false },
+    { id: 5, icon: '📦', name: 'Pack Opener', desc: 'Open any pack', reward: 250, progress: 0, max: 1, done: false },
+    { id: 6, icon: '🏟️', name: 'Club Scholar', desc: 'Identify 3 clubs', reward: 400, progress: 0, max: 3, done: false },
+  ],
+  tttUsed: new Set(),
+  gtpHintsRevealed: 0,
+  currentGTPPlayer: null,
+  currentGTCClub: null,
+  xgDone: false,
+  spDone: false,
+  gtpGuesses: 0,
+  gtcCorrect: 0,
+};
+
+// ========== PLAYERS DB ==========
+const PLAYERS = [
+  { name: 'Erling Haaland', flag: '🇳🇴', pos: 'FWD', club: 'Man City', league: 'pl', nation: 'Norway', pts: 98, inForm: true, newTransfer: false },
+  { name: 'Kylian Mbappé', flag: '🇫🇷', pos: 'FWD', club: 'Real Madrid', league: 'laliga', nation: 'France', pts: 96, inForm: true, newTransfer: true },
+  { name: 'Vinicius Jr', flag: '🇧🇷', pos: 'FWD', club: 'Real Madrid', league: 'laliga', nation: 'Brazil', pts: 94, inForm: false, newTransfer: false },
+  { name: 'Harry Kane', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', pos: 'FWD', club: 'Bayern Munich', league: 'bundesliga', nation: 'England', pts: 92, inForm: true, newTransfer: false },
+  { name: 'Jude Bellingham', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', pos: 'MID', club: 'Real Madrid', league: 'laliga', nation: 'England', pts: 91, inForm: false, newTransfer: false },
+  { name: 'Mohamed Salah', flag: '🇪🇬', pos: 'MID', club: 'Liverpool', league: 'pl', nation: 'Egypt', pts: 89, inForm: true, newTransfer: false },
+  { name: 'Bukayo Saka', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', pos: 'MID', club: 'Arsenal', league: 'pl', nation: 'England', pts: 87, inForm: true, newTransfer: false },
+  { name: 'Pedri', flag: '🇪🇸', pos: 'MID', club: 'Barcelona', league: 'laliga', nation: 'Spain', pts: 85, inForm: false, newTransfer: false },
+  { name: 'Trent Alexander-Arnold', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', pos: 'DEF', club: 'Liverpool', league: 'pl', nation: 'England', pts: 83, inForm: false, newTransfer: false },
+  { name: 'Virgil van Dijk', flag: '🇳🇱', pos: 'DEF', club: 'Liverpool', league: 'pl', nation: 'Netherlands', pts: 82, inForm: false, newTransfer: false },
+  { name: 'Ruben Dias', flag: '🇵🇹', pos: 'DEF', club: 'Man City', league: 'pl', nation: 'Portugal', pts: 80, inForm: false, newTransfer: false },
+  { name: 'William Saliba', flag: '🇫🇷', pos: 'DEF', club: 'Arsenal', league: 'pl', nation: 'France', pts: 79, inForm: true, newTransfer: false },
+  { name: 'Marc-André ter Stegen', flag: '🇩🇪', pos: 'GK', club: 'Barcelona', league: 'laliga', nation: 'Germany', pts: 77, inForm: false, newTransfer: false },
+  { name: 'Alisson Becker', flag: '🇧🇷', pos: 'GK', club: 'Liverpool', league: 'pl', nation: 'Brazil', pts: 78, inForm: false, newTransfer: false },
+  { name: 'Lamine Yamal', flag: '🇪🇸', pos: 'FWD', club: 'Barcelona', league: 'laliga', nation: 'Spain', pts: 90, inForm: true, newTransfer: false },
+  { name: 'Leroy Sané', flag: '🇩🇪', pos: 'MID', club: 'Bayern Munich', league: 'bundesliga', nation: 'Germany', pts: 76, inForm: false, newTransfer: false },
+  { name: 'Ousmane Dembélé', flag: '🇫🇷', pos: 'FWD', club: 'PSG', league: 'ligue1', nation: 'France', pts: 81, inForm: true, newTransfer: false },
+  { name: 'Bradley Barcola', flag: '🇫🇷', pos: 'FWD', club: 'PSG', league: 'ligue1', nation: 'France', pts: 78, inForm: false, newTransfer: false },
+  { name: 'Joao Cancelo', flag: '🇵🇹', pos: 'DEF', club: 'Barcelona', league: 'laliga', nation: 'Portugal', pts: 74, inForm: false, newTransfer: true },
+  { name: 'Bruno Fernandes', flag: '🇵🇹', pos: 'MID', club: 'Man Utd', league: 'pl', nation: 'Portugal', pts: 84, inForm: false, newTransfer: false },
+];
+
+// ========== CLUBS DB ==========
+const CLUBS = [
+  { name: 'Manchester City', badge: '🔵', color: '#6CABDD', league: 'pl', hints: ['Sky blue', 'Etihad Stadium', 'Pep Guardiola'] },
+  { name: 'Arsenal', badge: '🔴', color: '#EF0107', league: 'pl', hints: ['Red & white', 'Emirates Stadium', 'North London'] },
+  { name: 'Liverpool', badge: '🔴', color: '#C8102E', league: 'pl', hints: ['Anfield', 'The Reds', 'You\'ll Never Walk Alone'] },
+  { name: 'Real Madrid', badge: '⚪', color: '#FEBE10', league: 'laliga', hints: ['Los Blancos', 'Bernabeu', 'Record champions'] },
+  { name: 'Barcelona', badge: '🔵🔴', color: '#004D98', league: 'laliga', hints: ['Blaugrana', 'Camp Nou', 'La Masia academy'] },
+  { name: 'Bayern Munich', badge: '🔴', color: '#DC052D', league: 'bundesliga', hints: ['Allianz Arena', 'Bundesliga giants', 'Die Roten'] },
+  { name: 'PSG', badge: '🔵🔴', color: '#004170', league: 'ligue1', hints: ['Parc des Princes', 'Paris', 'Ligue 1'] },
+  { name: 'Borussia Dortmund', badge: '🟡', color: '#FDE100', league: 'bundesliga', hints: ['Yellow & black', 'Signal Iduna Park', 'Die Schwarzgelben'] },
+];
+
+// ========== TTT DATA ==========
+const TTT_ROWS = ['Premier League', 'La Liga', 'Bundesliga'];
+const TTT_COLS = ['Forward', 'Midfielder', 'Defender/GK'];
+const POS_MAP = { 'Forward': 'FWD', 'Midfielder': 'MID', 'Defender/GK': ['DEF','GK'] };
+const LEAGUE_MAP = { 'Premier League': 'pl', 'La Liga': 'laliga', 'Bundesliga': 'bundesliga' };
+
+// ========== PACKS ==========
+const PACKS = [
+  {
+    id: 'inform',
+    name: 'In Form Pack',
+    icon: '⚡',
+    cls: 'gold-pack',
+    desc: 'Guarantees an In Form player (+2 pts bonus). 1 of 2 choice.',
+    cost: 5000,
+    filter: p => p.inForm,
+  },
+  {
+    id: 'nation-france',
+    name: 'France Nation Pack',
+    icon: '🇫🇷',
+    cls: 'blue-pack',
+    desc: 'Guaranteed French international. 1 of 2 choice.',
+    cost: 3500,
+    filter: p => p.nation === 'France',
+  },
+  {
+    id: 'nation-england',
+    name: 'England Nation Pack',
+    icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+    cls: 'blue-pack',
+    desc: 'Guaranteed English international. 1 of 2 choice.',
+    cost: 3500,
+    filter: p => p.nation === 'England',
+  },
+  {
+    id: 'nation-spain',
+    name: 'Spain Nation Pack',
+    icon: '🇪🇸',
+    cls: 'blue-pack',
+    desc: 'Guaranteed Spanish international. 1 of 2 choice.',
+    cost: 3500,
+    filter: p => p.nation === 'Spain',
+  },
+  {
+    id: 'winter-transfer',
+    name: 'Winter Transfer Pack',
+    icon: '🔄',
+    cls: 'green-pack',
+    desc: 'A player who moved clubs in the winter window. 1 of 2 choice.',
+    cost: 4000,
+    filter: p => p.newTransfer,
+  },
+  {
+    id: 'random',
+    name: 'Standard Pack',
+    icon: '📦',
+    cls: 'purple-pack',
+    desc: 'Any player from across all leagues. 1 of 2 choice.',
+    cost: 2000,
+    filter: p => true,
+  },
+];
+
+// ========== MATCHES (xG) ==========
+const XG_MATCHES = [
+  { home: 'Man City', away: 'Arsenal', score: '3-1', homeXG: 2.8, awayXG: 1.1, shots: [14,7,'58%',9,3,7] },
+  { home: 'Liverpool', away: 'Chelsea', score: '2-2', homeXG: 1.9, awayXG: 1.7, shots: [12,5,'52%',11,6,5] },
+  { home: 'Barcelona', away: 'Real Madrid', score: '1-2', homeXG: 1.4, awayXG: 2.1, shots: [10,4,'55%',8,5,4] },
+];
+
+// ========== SCORE PREDICTOR MATCHES ==========
+const SP_MATCHES = [
+  { home: 'Man City', homeFlag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', away: 'Arsenal', awayFlag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', actual: [2,1] },
+  { home: 'Barcelona', homeFlag: '🇪🇸', away: 'Real Madrid', awayFlag: '🇪🇸', actual: [1,2] },
+  { home: 'Bayern', homeFlag: '🇩🇪', away: 'Dortmund', awayFlag: '🇩🇪', actual: [3,0] },
+];
+
+let spPredictions = SP_MATCHES.map(() => [0,0]);
+let currentXGMatch = 0;
+let packModalData = null;
+let packFlipped = false;
+let packPickOptions = [];
+
+// ========== INIT ==========
+window.onload = () => {
+  renderPacks();
+  renderPitch();
+  renderPlayerList();
+  renderObjectives();
+  renderLeagueSelector();
+  renderLeaderboard();
+  renderSPMatches();
+  newGTPPlayer();
+  newGTCClub();
+  loadXGMatch();
+  initTTT();
+  updateCurrencyDisplay();
+};
+
+// ========== CURRENCY ==========
+function formatCurrency(v) {
+  if (v >= 1000000) return (v/1000000).toFixed(1) + 'M';
+  if (v >= 1000) return (v/1000).toFixed(0) + 'K';
+  return v.toString();
+}
+function updateCurrencyDisplay() {
+  document.getElementById('currency-display').textContent = '💰 ' + formatCurrency(state.currency);
+  document.getElementById('home-currency').textContent = formatCurrency(state.currency);
+  document.getElementById('home-pts').textContent = state.points;
+}
+function addCurrency(amount, reason) {
+  state.currency += amount;
+  updateCurrencyDisplay();
+  toast(`+${formatCurrency(amount)} coins! ${reason}`, 'success');
+}
+function spendCurrency(amount) {
+  if (state.currency < amount) { toast('Not enough coins!', 'error'); return false; }
+  state.currency -= amount;
+  updateCurrencyDisplay();
+  return true;
+}
+
+// ========== TOAST ==========
+function toast(msg, type='info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ========== PAGE NAV ==========
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+}
+
+// ========== PITCH ==========
+const FORMATIONS = {
+  '4-3-3': [['GK'], ['DEF','DEF','DEF','DEF'], ['MID','MID','MID'], ['FWD','FWD','FWD']],
+  '4-4-2': [['GK'], ['DEF','DEF','DEF','DEF'], ['MID','MID','MID','MID'], ['FWD','FWD']],
+  '3-5-2': [['GK'], ['DEF','DEF','DEF'], ['MID','MID','MID','MID','MID'], ['FWD','FWD']],
+  '4-2-3-1': [['GK'], ['DEF','DEF','DEF','DEF'], ['MID','MID'], ['MID','MID','MID'], ['FWD']],
+  '5-3-2': [['GK'], ['DEF','DEF','DEF','DEF','DEF'], ['MID','MID','MID'], ['FWD','FWD']],
+};
+
+let selectedSlot = null;
+let squadSlotMeta = [];
+
+function renderPitch() {
+  const f = document.getElementById('formation-select').value;
+  const rows = FORMATIONS[f];
+  const container = document.getElementById('pitch-container');
+  squadSlotMeta = [];
+  let slotIdx = 0;
+  let html = '';
+  // Reverse rows so GK at bottom visually
+  const reversed = [...rows].reverse();
+  reversed.forEach((row, ri) => {
+    html += '<div class="formation-row">';
+    row.forEach((pos) => {
+      const player = state.squad[slotIdx];
+      const isCaptain = slotIdx === 0 && player;
+      const filled = !!player;
+      html += `<div class="player-slot ${filled?'filled':''} ${isCaptain?'captain':''}" onclick="openPlayerPick(${slotIdx},'${pos}')">
+        <div class="pos-label">${pos}</div>
+        <div class="player-avatar">${player ? player.flag : '+'}</div>
+        <div class="slot-name">${player ? player.name.split(' ').pop() : '<span class="slot-empty">Empty</span>'}</div>
+        <div class="slot-pts">${player ? player.pts + ' pts' : ''}</div>
+      </div>`;
+      squadSlotMeta.push({ pos, slotIdx });
+      slotIdx++;
+    });
+    html += '</div>';
+  });
+  container.innerHTML = html;
+  // Update squad points
+  const total = state.squad.filter(Boolean).reduce((a,b) => a + b.pts, 0);
+  document.getElementById('squad-pts').textContent = total + ' pts';
+  state.points = total;
+  document.getElementById('home-pts').textContent = total;
+}
+
+function renderPlayerList() {
+  const grid = document.getElementById('player-list');
+  const myPlayers = state.squad.filter(Boolean);
+  const count = document.getElementById('squad-count');
+  count.textContent = myPlayers.length + '/15';
+  if (!myPlayers.length) {
+    grid.innerHTML = '<div class="text-muted" style="padding:20px;grid-column:1/-1">No players yet. Open packs or click a slot on the pitch to add players.</div>';
+    return;
+  }
+  grid.innerHTML = myPlayers.map(p => `
+    <div class="player-card">
+      <div class="pc-pos">${p.pos}</div>
+      ${p.inForm ? '<div class="pc-if">IF</div>' : ''}
+      <div class="pc-flag">${p.flag}</div>
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-club">${p.club}</div>
+      <div class="pc-pts">${p.pts}</div>
+    </div>
+  `).join('');
+}
+
+function openPlayerPick(slotIdx, pos) {
+  selectedSlot = slotIdx;
+  document.getElementById('pick-position-label').textContent = pos;
+  const panel = document.getElementById('player-pick-panel');
+  const grid = document.getElementById('pick-player-grid');
+  const eligible = PLAYERS.filter(p => p.pos === pos || (pos === 'DEF' && p.pos === 'DEF') || (pos === 'GK' && p.pos === 'GK'));
+  grid.innerHTML = eligible.map((p, i) => `
+    <div class="player-card" onclick="assignPlayer(${PLAYERS.indexOf(p)})">
+      <div class="pc-pos">${p.pos}</div>
+      ${p.inForm ? '<div class="pc-if">IF</div>' : ''}
+      <div class="pc-flag" style="font-size:1.8rem">${p.flag}</div>
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-club" style="font-size:0.7rem">${p.club}</div>
+      <div class="pc-pts">${p.pts}</div>
+    </div>
+  `).join('');
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function assignPlayer(playerIdx) {
+  if (selectedSlot === null) return;
+  state.squad[selectedSlot] = { ...PLAYERS[playerIdx] };
+  document.getElementById('player-pick-panel').style.display = 'none';
+  renderPitch();
+  renderPlayerList();
+  toast(`${PLAYERS[playerIdx].name} added to squad!`, 'success');
+}
+
+// ========== OBJECTIVES ==========
+function renderObjectives() {
+  const list = document.getElementById('objectives-list');
+  list.innerHTML = state.objectives.map(obj => `
+    <div class="obj-row">
+      <div class="obj-icon">${obj.icon}</div>
+      <div class="obj-info">
+        <div class="obj-name">${obj.name}</div>
+        <div class="obj-desc">${obj.desc}</div>
+        <div class="obj-progress"><div class="obj-bar" style="width:${Math.min(100,obj.progress/obj.max*100)}%"></div></div>
+      </div>
+      <div class="obj-reward">
+        <div class="reward-val">${formatCurrency(obj.reward)}</div>
+        <div class="reward-lbl">coins</div>
+        ${obj.progress >= obj.max && !obj.done
+          ? `<button class="btn btn-gold obj-claim" onclick="claimObjective(${obj.id})" style="padding:5px 12px;font-size:0.75rem;margin-top:6px">Claim</button>`
+          : obj.done ? '<div style="color:var(--green);font-size:0.75rem;margin-top:6px">✓ Claimed</div>' : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function claimObjective(id) {
+  const obj = state.objectives.find(o => o.id === id);
+  if (!obj || obj.done || obj.progress < obj.max) return;
+  obj.done = true;
+  addCurrency(obj.reward, obj.name + ' complete!');
+  renderObjectives();
+}
+
+function progressObjective(id, by=1) {
+  const obj = state.objectives.find(o => o.id === id);
+  if (!obj || obj.done) return;
+  obj.progress = Math.min(obj.max, obj.progress + by);
+  renderObjectives();
+  if (obj.progress >= obj.max) toast(`🎯 Objective ready to claim: ${obj.name}`, 'info');
+}
+
+// ========== PACKS ==========
+function renderPacks() {
+  const grid = document.getElementById('pack-grid');
+  grid.innerHTML = PACKS.map(pack => `
+    <div class="pack-card ${pack.cls}" onclick="buyPack('${pack.id}')">
+      <span class="pack-icon">${pack.icon}</span>
+      <div class="pack-name">${pack.name}</div>
+      <div class="pack-desc">${pack.desc}</div>
+      <div class="pack-cost">💰 ${formatCurrency(pack.cost)}</div>
+      <button class="btn btn-primary" style="width:100%">Open Pack</button>
+    </div>
+  `).join('');
+}
+
+function buyPack(packId) {
+  const pack = PACKS.find(p => p.id === packId);
+  if (!spendCurrency(pack.cost)) return;
+
+  progressObjective(5); // Pack opener
+
+  // Get eligible players
+  let pool = PLAYERS.filter(pack.filter);
+  if (!pool.length) pool = PLAYERS;
+
+  // Pick 2 random unique players
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  packPickOptions = [shuffled[0], shuffled[1] || PLAYERS[Math.floor(Math.random()*PLAYERS.length)]];
+
+  // Show modal
+  packFlipped = false;
+  packModalData = pack;
+  document.getElementById('modal-pack-name').textContent = pack.name;
+  document.getElementById('modal-pack-desc').textContent = 'Click the pack to reveal your first choice';
+  document.getElementById('pack-anim').classList.remove('flipped');
+  document.getElementById('pack-pick-area').style.display = 'none';
+  document.getElementById('pack-modal').classList.add('show');
+
+  // Add to history
+  state.packHistory.unshift({ pack: pack.name, icon: pack.icon, date: new Date().toLocaleDateString() });
+  renderPackHistory();
+}
+
+function flipPack() {
+  if (packFlipped) return;
+  packFlipped = true;
+  const p = packPickOptions[0];
+  document.getElementById('pf-flag').textContent = p.flag;
+  document.getElementById('pf-pos').textContent = p.pos;
+  document.getElementById('pf-name').textContent = p.name;
+  document.getElementById('pf-club').textContent = p.club;
+  document.getElementById('pf-pts').textContent = p.pts + ' pts';
+  document.getElementById('pack-anim').classList.add('flipped');
+
+  // After flip animation, show choice
+  setTimeout(() => {
+    document.getElementById('modal-pack-desc').textContent = 'Choose 1 of 2 players:';
+    const [p1, p2] = packPickOptions;
+    document.getElementById('pick-choice').innerHTML = `
+      <button class="pick-btn" onclick="pickPackPlayer(0)">${p1.flag}<br><strong>${p1.name}</strong><br><span style="color:var(--muted);font-size:0.75rem">${p1.club}</span><br><span style="color:var(--accent);font-weight:800">${p1.pts} pts</span></button>
+      <button class="pick-btn" onclick="pickPackPlayer(1)">${p2.flag}<br><strong>${p2.name}</strong><br><span style="color:var(--muted);font-size:0.75rem">${p2.club}</span><br><span style="color:var(--accent);font-weight:800">${p2.pts} pts</span></button>
+    `;
+    document.getElementById('pack-pick-area').style.display = 'block';
+    document.getElementById('pack-anim').style.display = 'none';
+  }, 900);
+}
+
+function pickPackPlayer(idx) {
+  const player = packPickOptions[idx];
+  // Find empty slot
+  const emptySlot = state.squad.findIndex(s => s === null);
+  if (emptySlot !== -1) {
+    state.squad[emptySlot] = { ...player };
+    renderPitch();
+    renderPlayerList();
+  }
+  toast(`${player.name} added to your squad!`, 'success');
+  closePackModal();
+}
+
+function closePackModal() {
+  document.getElementById('pack-modal').classList.remove('show');
+  document.getElementById('pack-anim').style.display = '';
+}
+
+function renderPackHistory() {
+  const el = document.getElementById('pack-history');
+  if (!state.packHistory.length) return;
+  el.innerHTML = state.packHistory.slice(0,5).map(h => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:1.5rem">${h.icon}</span>
+      <div>
+        <div style="font-weight:600;font-size:0.9rem">${h.pack}</div>
+        <div style="color:var(--muted);font-size:0.75rem">${h.date}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ========== GAME TABS ==========
+function switchGame(id) {
+  document.querySelectorAll('.minigame').forEach(g => g.classList.remove('active'));
+  document.querySelectorAll('.game-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('game-' + id).classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+// ========== XG GAME ==========
+function loadXGMatch() {
+  const m = XG_MATCHES[currentXGMatch % XG_MATCHES.length];
+  document.getElementById('xg-home-team').textContent = m.home;
+  document.getElementById('xg-away-team').textContent = m.away;
+  document.getElementById('xg-score').textContent = m.score;
+  document.getElementById('xg-shots-home').textContent = m.shots[0];
+  document.getElementById('xg-sot-home').textContent = m.shots[1];
+  document.getElementById('xg-poss').textContent = m.shots[2];
+  document.getElementById('xg-shots-away').textContent = m.shots[3];
+  document.getElementById('xg-sot-away').textContent = m.shots[4];
+  document.getElementById('xg-corners').textContent = m.shots[5];
+  document.getElementById('xg-home-slider').value = 1.5;
+  document.getElementById('xg-away-slider').value = 0.8;
+  document.getElementById('xg-home-val').textContent = '1.5';
+  document.getElementById('xg-away-val').textContent = '0.8';
+  document.getElementById('xg-answer-display').innerHTML = '';
+  const btn = document.getElementById('xg-submit-btn');
+  btn.disabled = state.xgDone;
+  btn.textContent = state.xgDone ? '✓ Submitted Today' : 'Submit Guess';
+}
+
+function submitXG() {
+  if (state.xgDone) return;
+  const m = XG_MATCHES[currentXGMatch % XG_MATCHES.length];
+  const homeGuess = parseFloat(document.getElementById('xg-home-slider').value);
+  const awayGuess = parseFloat(document.getElementById('xg-away-slider').value);
+  const homeDiff = Math.abs(homeGuess - m.homeXG);
+  const awayDiff = Math.abs(awayGuess - m.awayXG);
+  const avg = (homeDiff + awayDiff) / 2;
+  let reward = 0, msg = '';
+  if (avg <= 0.2) { reward = 500; msg = '🎯 Perfect! Within 0.2!'; }
+  else if (avg <= 0.5) { reward = 300; msg = '👍 Close! Within 0.5'; }
+  else if (avg <= 1.0) { reward = 100; msg = '📊 Not bad, within 1.0'; }
+  else { msg = '❌ Too far off. Actual: ' + m.homeXG + ' / ' + m.awayXG; }
+
+  document.getElementById('xg-answer-display').innerHTML = `
+    <div class="xg-answer" style="margin-bottom:8px">${msg}</div>
+    <div class="text-muted" style="text-align:center;font-size:0.8rem">Actual xG: ${m.home} ${m.homeXG} — ${m.away} ${m.awayXG}</div>
+  `;
+
+  if (reward) addCurrency(reward, 'xG Guess');
+  if (avg <= 0.3) progressObjective(1); // xG Analyst
+  state.xgDone = true;
+  document.getElementById('xg-submit-btn').disabled = true;
+  document.getElementById('xg-submit-btn').textContent = '✓ Submitted';
+}
+
+// ========== TIKI TAKA TOE ==========
+let tttBoard = Array(9).fill(null); // {player, owner: 'X'|'O'}
+let tttTurn = 'X'; // X = player, O = AI
+let tttOver = false;
+let selectedTTTCell = null;
+
+function initTTT() {
+  tttBoard = Array(9).fill(null);
+  tttTurn = 'X';
+  tttOver = false;
+  selectedTTTCell = null;
+  state.tttUsed = new Set();
+  renderTTT();
+}
+
+function renderTTT() {
+  const grid = document.getElementById('ttt-grid');
+  // Headers row 0
+  let html = `<div class="ttt-header" style="background:transparent"></div>`;
+  TTT_COLS.forEach(c => { html += `<div class="ttt-header">${c}</div>`; });
+  // Rows
+  TTT_ROWS.forEach((row, ri) => {
+    html += `<div class="ttt-header">${row}</div>`;
+    TTT_COLS.forEach((col, ci) => {
+      const cellIdx = ri * 3 + ci;
+      const cell = tttBoard[cellIdx];
+      const isSelected = selectedTTTCell === cellIdx;
+      html += `<div class="ttt-cell ${cell?'taken':''} ${isSelected?'selected':''}" onclick="selectTTTCell(${cellIdx})" style="${isSelected?'border-color:var(--accent);background:#1e2d45':''}">`;
+      if (cell) {
+        html += `<div class="cell-emoji" style="font-size:1.2rem">${cell.flag}</div>
+                 <div class="cell-name">${cell.name.split(' ').pop()}</div>
+                 <div class="cell-mark">${cell.owner === 'X' ? '⭕' : '❌'}</div>`;
+      } else {
+        html += `<div style="color:var(--muted);font-size:0.7rem">Click</div>`;
+      }
+      html += `</div>`;
+    });
+  });
+  grid.innerHTML = html;
+  document.getElementById('ttt-used-count').textContent = `Used: ${state.tttUsed.size} players`;
+}
+
+function selectTTTCell(idx) {
+  if (tttBoard[idx] || tttOver || tttTurn !== 'X') return;
+  selectedTTTCell = idx;
+  renderTTT();
+  document.getElementById('ttt-input').value = '';
+  document.getElementById('ttt-suggestions').style.display = 'none';
+  document.getElementById('ttt-input').focus();
+}
+
+function tttSuggest() {
+  const val = document.getElementById('ttt-input').value.trim().toLowerCase();
+  const sug = document.getElementById('ttt-suggestions');
+  if (!val || val.length < 2) { sug.style.display = 'none'; return; }
+  const matches = PLAYERS.filter(p => p.name.toLowerCase().includes(val) && !state.tttUsed.has(p.name)).slice(0, 6);
+  if (!matches.length) { sug.style.display = 'none'; return; }
+  sug.innerHTML = matches.map(p => `<div class="ttt-suggestion" onclick="tttSelectSuggestion('${p.name}')">${p.flag} ${p.name} — ${p.club}</div>`).join('');
+  sug.style.display = 'block';
+}
+
+function tttSelectSuggestion(name) {
+  document.getElementById('ttt-input').value = name;
+  document.getElementById('ttt-suggestions').style.display = 'none';
+}
+
+function tttSubmit() {
+  if (selectedTTTCell === null || tttOver) return;
+  const val = document.getElementById('ttt-input').value.trim();
+  const player = PLAYERS.find(p => p.name.toLowerCase() === val.toLowerCase());
+  if (!player) { toast('Player not found!', 'error'); return; }
+  if (state.tttUsed.has(player.name)) { toast('Player already used in this game!', 'error'); return; }
+
+  const ri = Math.floor(selectedTTTCell / 3);
+  const ci = selectedTTTCell % 3;
+  const neededLeague = LEAGUE_MAP[TTT_ROWS[ri]];
+  const neededPos = POS_MAP[TTT_COLS[ci]];
+  const posMatch = Array.isArray(neededPos) ? neededPos.includes(player.pos) : player.pos === neededPos;
+
+  if (player.league !== neededLeague || !posMatch) {
+    toast(`❌ ${player.name} doesn't fit! Need ${TTT_ROWS[ri]} ${TTT_COLS[ci]}`, 'error');
+    return;
+  }
+
+  state.tttUsed.add(player.name);
+  tttBoard[selectedTTTCell] = { ...player, owner: 'X' };
+  document.getElementById('ttt-input').value = '';
+  selectedTTTCell = null;
+  renderTTT();
+
+  if (checkTTTWin('X')) {
+    document.getElementById('ttt-status').innerHTML = '<span style="color:var(--green)">🎉 You win! +1000 coins</span>';
+    addCurrency(1000, 'Tiki-Taka Toe Win');
+    progressObjective(2);
+    tttOver = true;
+    document.getElementById('ttt-input-area').style.display = 'none';
+    return;
+  }
+
+  if (tttBoard.every(c => c)) {
+    document.getElementById('ttt-status').innerHTML = '<span style="color:var(--yellow)">🤝 Draw!</span>';
+    tttOver = true;
+    return;
+  }
+
+  // AI turn
+  tttTurn = 'O';
+  document.getElementById('ttt-status').textContent = "AI's turn... (❌)";
+  setTimeout(aiTTTMove, 800);
+}
+
+function aiTTTMove() {
+  const empty = tttBoard.map((c,i) => c ? -1 : i).filter(i => i >= 0);
+  if (!empty.length) return;
+  // Find a valid cell for AI
+  for (const idx of empty.sort(() => Math.random()-.5)) {
+    const ri = Math.floor(idx / 3);
+    const ci = idx % 3;
+    const neededLeague = LEAGUE_MAP[TTT_ROWS[ri]];
+    const neededPos = POS_MAP[TTT_COLS[ci]];
+    const eligible = PLAYERS.filter(p => {
+      const posMatch = Array.isArray(neededPos) ? neededPos.includes(p.pos) : p.pos === neededPos;
+      return p.league === neededLeague && posMatch && !state.tttUsed.has(p.name);
+    });
+    if (eligible.length) {
+      const pick = eligible[Math.floor(Math.random()*eligible.length)];
+      state.tttUsed.add(pick.name);
+      tttBoard[idx] = { ...pick, owner: 'O' };
+      renderTTT();
+      if (checkTTTWin('O')) {
+        document.getElementById('ttt-status').innerHTML = '<span style="color:var(--red)">❌ AI wins! Try again.</span>';
+        tttOver = true;
+        document.getElementById('ttt-input-area').style.display = 'none';
+        return;
+      }
+      tttTurn = 'X';
+      document.getElementById('ttt-status').textContent = 'Your turn (⭕)';
+      return;
+    }
+  }
+  // AI can't move
+  tttTurn = 'X';
+  document.getElementById('ttt-status').textContent = 'Your turn (⭕)';
+}
+
+function checkTTTWin(owner) {
+  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  return wins.some(([a,b,c]) => tttBoard[a]?.owner===owner && tttBoard[b]?.owner===owner && tttBoard[c]?.owner===owner);
+}
+
+function resetTTT() {
+  initTTT();
+  document.getElementById('ttt-status').textContent = 'Your turn (⭕)';
+  document.getElementById('ttt-input-area').style.display = 'block';
+}
+
+// ========== SCORE PREDICTOR ==========
+function renderSPMatches() {
+  const el = document.getElementById('sp-matches');
+  el.innerHTML = SP_MATCHES.map((m, i) => `
+    <div class="sp-match" id="sp-match-${i}">
+      <div class="sp-teams-row">
+        <div class="sp-team"><div class="sp-flag">${m.homeFlag}</div><div class="sp-name">${m.home}</div></div>
+        <div class="sp-vs">vs</div>
+        <div class="sp-team"><div class="sp-flag">${m.awayFlag}</div><div class="sp-name">${m.away}</div></div>
+      </div>
+      <div class="sp-score-input">
+        <button class="sp-score-btn" onclick="changeScore(${i},0,-1)">−</button>
+        <span class="sp-score-val" id="sp-h-${i}">0</span>
+        <span class="sp-dash">−</span>
+        <span class="sp-score-val" id="sp-a-${i}">0</span>
+        <button class="sp-score-btn" onclick="changeScore(${i},1,1)">+</button>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+        <button class="sp-score-btn" onclick="changeScore(${i},0,1)">+ Home</button>
+        <button class="sp-score-btn" onclick="changeScore(${i},1,-1)">− Away</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function changeScore(matchIdx, side, delta) {
+  spPredictions[matchIdx][side] = Math.max(0, spPredictions[matchIdx][side] + delta);
+  const ids = ['sp-h-', 'sp-a-'];
+  document.getElementById(ids[side] + matchIdx).textContent = spPredictions[matchIdx][side];
+}
+
+function submitScores() {
+  if (state.spDone) { toast('Already submitted today!', 'error'); return; }
+  let correct = 0;
+  SP_MATCHES.forEach((m, i) => {
+    const pred = spPredictions[i];
+    if (pred[0] === m.actual[0] && pred[1] === m.actual[1]) correct++;
+  });
+  const rewards = [0, 250, 500, 750];
+  const reward = rewards[correct];
+  if (reward) addCurrency(reward, `${correct}/3 scores correct`);
+  if (correct > 0) progressObjective(3);
+  toast(`${correct}/3 correct! ${reward ? '+' + formatCurrency(reward) + ' coins' : ''}`, correct > 0 ? 'success' : 'error');
+
+  // Show actual scores
+  SP_MATCHES.forEach((m, i) => {
+    const el = document.getElementById(`sp-match-${i}`);
+    const pred = spPredictions[i];
+    const isCorrect = pred[0] === m.actual[0] && pred[1] === m.actual[1];
+    el.style.border = `2px solid ${isCorrect ? 'var(--green)' : 'var(--red)'}`;
+    el.innerHTML += `<div style="text-align:center;margin-top:8px;font-size:0.85rem;font-weight:700;color:${isCorrect?'var(--green)':'var(--red)'}">
+      ${isCorrect ? '✓ Correct!' : `✗ Actual: ${m.actual[0]}−${m.actual[1]}`}
+    </div>`;
+  });
+
+  state.spDone = true;
+  document.getElementById('sp-submit').disabled = true;
+  document.getElementById('sp-submit').textContent = '✓ Submitted Today';
+}
+
+// ========== GUESS THE PLAYER ==========
+const GTP_PLAYERS = [
+  { name: 'Erling Haaland', flag: '🇳🇴', hints: ['Norwegian striker', 'Premier League', 'Manchester City', '23 years old'] },
+  { name: 'Kylian Mbappé', flag: '🇫🇷', hints: ['French forward', 'La Liga', 'World Cup winner', 'Incredibly fast'] },
+  { name: 'Jude Bellingham', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', hints: ['English midfielder', 'La Liga', 'Real Madrid', 'Ex-Dortmund'] },
+  { name: 'Lamine Yamal', flag: '🇪🇸', hints: ['Spanish winger', 'Barcelona', 'Born 2007', 'La Masia graduate'] },
+  { name: 'Mohamed Salah', flag: '🇪🇬', hints: ['Egyptian winger', 'Premier League', 'Liverpool legend', 'Premier League top scorer'] },
+];
+let gtpRevealedCount = 0;
+let gtpCorrect = false;
+
+function newGTPPlayer() {
+  state.currentGTPPlayer = GTP_PLAYERS[Math.floor(Math.random() * GTP_PLAYERS.length)];
+  gtpRevealedCount = 0;
+  gtpCorrect = false;
+  document.getElementById('gtp-silhouette').classList.remove('revealed');
+  document.getElementById('gtp-silhouette').textContent = '❓';
+  document.getElementById('gtp-input').value = '';
+  document.getElementById('gtp-result').textContent = '';
+  document.getElementById('gtp-hint-btn').disabled = false;
+  renderGTPHints();
+}
+
+function renderGTPHints() {
+  const p = state.currentGTPPlayer;
+  document.getElementById('gtp-hint-label').textContent = `Hints revealed: ${gtpRevealedCount}/4`;
+  document.getElementById('gtp-hints').innerHTML = p.hints.map((h, i) => `
+    <div class="gtp-hint ${i < gtpRevealedCount ? 'visible' : ''}">${i < gtpRevealedCount ? h : '???'}</div>
+  `).join('');
+}
+
+function revealGTPHint() {
+  if (gtpRevealedCount >= 4) return;
+  if (!spendCurrency(100)) return;
+  gtpRevealedCount++;
+  renderGTPHints();
+  if (gtpRevealedCount >= 4) document.getElementById('gtp-hint-btn').disabled = true;
+}
+
+function gtpSuggest() {
+  const val = document.getElementById('gtp-input').value.trim().toLowerCase();
+  const sug = document.getElementById('gtp-suggestions');
+  if (!val || val.length < 2) { sug.style.display = 'none'; return; }
+  const matches = PLAYERS.filter(p => p.name.toLowerCase().includes(val)).slice(0,5);
+  sug.innerHTML = matches.map(p => `<div class="ttt-suggestion" onclick="document.getElementById('gtp-input').value='${p.name}';document.getElementById('gtp-suggestions').style.display='none'">${p.flag} ${p.name}</div>`).join('');
+  sug.style.display = matches.length ? 'block' : 'none';
+}
+
+function submitGTP() {
+  if (gtpCorrect) return;
+  const val = document.getElementById('gtp-input').value.trim();
+  const p = state.currentGTPPlayer;
+  if (val.toLowerCase() === p.name.toLowerCase()) {
+    gtpCorrect = true;
+    const reward = Math.max(100, 600 - gtpRevealedCount * 100);
+    addCurrency(reward, 'Guess the Player');
+    document.getElementById('gtp-result').innerHTML = `<span style="color:var(--green)">🎉 Correct! It's ${p.flag} ${p.name}! +${reward} coins</span>`;
+    document.getElementById('gtp-silhouette').textContent = p.flag;
+    document.getElementById('gtp-silhouette').classList.add('revealed');
+    progressObjective(4);
+    // Reveal all hints
+    gtpRevealedCount = 4;
+    renderGTPHints();
+  } else {
+    document.getElementById('gtp-result').innerHTML = `<span style="color:var(--red)">❌ Wrong! Try again.</span>`;
+  }
+}
+
+// ========== GUESS THE CLUB ==========
+function newGTCClub() {
+  state.currentGTCClub = CLUBS[Math.floor(Math.random() * CLUBS.length)];
+  const c = state.currentGTCClub;
+  document.getElementById('gtc-badge').textContent = c.badge;
+  document.getElementById('gtc-badge').style.filter = 'none';
+  document.getElementById('gtc-result').textContent = '';
+
+  // 4 options including correct
+  const others = CLUBS.filter(cl => cl.name !== c.name).sort(() => Math.random()-.5).slice(0,3);
+  const options = [...others, c].sort(() => Math.random()-.5);
+  document.getElementById('gtc-options').innerHTML = options.map(o => `
+    <button class="btn btn-secondary" onclick="guessGTC('${o.name}')" style="padding:14px;text-align:center">
+      ${o.badge} ${o.name}
+    </button>
+  `).join('');
+}
+
+function guessGTC(name) {
+  const c = state.currentGTCClub;
+  const result = document.getElementById('gtc-result');
+  if (name === c.name) {
+    result.innerHTML = `<span style="color:var(--green)">✅ Correct! ${c.name} +500 coins</span>`;
+    addCurrency(500, 'Guess the Club');
+    state.gtcCorrect++;
+    if (state.gtcCorrect <= 3) progressObjective(6);
+    setTimeout(newGTCClub, 1500);
+  } else {
+    result.innerHTML = `<span style="color:var(--red)">❌ Wrong! It was ${c.name}</span>`;
+    setTimeout(newGTCClub, 1800);
+  }
+}
+
+// ========== LEAGUE SELECTOR ==========
+const ALL_LEAGUES = [
+  { id: 'pl', name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
+  { id: 'laliga', name: 'La Liga', flag: '🇪🇸' },
+  { id: 'bundesliga', name: 'Bundesliga', flag: '🇩🇪' },
+  { id: 'ligue1', name: 'Ligue 1', flag: '🇫🇷' },
+];
+
+function renderLeagueSelector() {
+  const el = document.getElementById('league-selector');
+  el.innerHTML = ALL_LEAGUES.map(l => `
+    <div class="league-pill ${state.activeLeagues.includes(l.id)?'active':''}" onclick="toggleLeague('${l.id}')">
+      ${l.flag} ${l.name}
+    </div>
+  `).join('');
+}
+
+function toggleLeague(id) {
+  if (state.activeLeagues.includes(id)) {
+    if (state.activeLeagues.length === 1) { toast('Must be in at least one league!', 'error'); return; }
+    state.activeLeagues = state.activeLeagues.filter(l => l !== id);
+  } else {
+    state.activeLeagues.push(id);
+  }
+  renderLeagueSelector();
+  renderLeaderboard();
+}
+
+// ========== LEADERBOARD ==========
+const LB_DATA = [
+  { name: 'Ronaldo7Fan', pts: 2841, change: 3, avatar: '🦁', rank: 1 },
+  { name: 'MessiGOAT', pts: 2790, change: -1, avatar: '🐐', rank: 2 },
+  { name: 'PremierPicksUK', pts: 2755, change: 2, avatar: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', rank: 3 },
+  { name: 'TacticsNerd', pts: 2710, change: 0, avatar: '🧠', rank: 4 },
+  { name: 'FPLKing2025', pts: 2688, change: -2, avatar: '👑', rank: 5 },
+  { name: 'LaLigaFanatic', pts: 2630, change: 1, avatar: '🇪🇸', rank: 6 },
+  { name: 'YOU', pts: state.points || 0, change: 0, avatar: '⚽', rank: 247, isMe: true },
+];
+
+function renderLeaderboard() {
+  const el = document.getElementById('leaderboard-list');
+  LB_DATA[LB_DATA.length-1].pts = state.points;
+  const sorted = [...LB_DATA].sort((a,b) => b.pts - a.pts);
+  const top = sorted.slice(0,6);
+  const me = sorted.find(p => p.isMe);
+  const myRank = sorted.indexOf(me) + 1;
+
+  const rankClasses = ['gold','silver','bronze','','',''];
+  el.innerHTML = top.map((p, i) => `
+    <div class="lb-row ${p.isMe?'lb-me':''}">
+      <div class="lb-rank ${rankClasses[i]||''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+      <div class="lb-avatar">${p.avatar}</div>
+      <div class="lb-name">${p.name}${p.isMe?' (You)':''}</div>
+      <div>
+        <div class="lb-pts">${p.pts.toLocaleString()} pts</div>
+        <div class="lb-change ${p.change>0?'up':p.change<0?'down':''}">${p.change>0?'↑'+p.change:p.change<0?'↓'+Math.abs(p.change):'—'}</div>
+      </div>
+    </div>
+  `).join('');
+
+  if (myRank > 6) {
+    el.innerHTML += `<div style="text-align:center;padding:8px;color:var(--muted);font-size:0.8rem">· · ·</div>`;
+    el.innerHTML += `
+      <div class="lb-row lb-me">
+        <div class="lb-rank">${myRank}</div>
+        <div class="lb-avatar">⚽</div>
+        <div class="lb-name">YOU</div>
+        <div>
+          <div class="lb-pts">${me.pts.toLocaleString()} pts</div>
+          <div class="lb-change">—</div>
+        </div>
+      </div>`;
+  }
+  document.getElementById('home-rank').textContent = '#' + myRank;
+}
+</script>
+</body>
+</html>
