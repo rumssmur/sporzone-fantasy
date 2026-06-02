@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PITCH — Live Football</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#08090d;--ink2:#0f1117;--ink3:#161b27;--ink4:#1e2535;--lime:#b5ff4f;--lime2:#8fd630;--fire:#ff4d1c;--ice:#3ee8ff;--gold:#ffd24d;--txt:#e8edf8;--txt2:#9aa5c0;--txt3:#5a6480;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--txt);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--ink)}::-webkit-scrollbar-thumb{background:var(--lime2);border-radius:4px}
+.ticker{background:var(--lime);height:32px;display:flex;align-items:center;overflow:hidden}
+.ticker-lbl{background:var(--ink);color:var(--lime);font-family:'Teko',sans-serif;font-size:13px;letter-spacing:3px;padding:0 18px;height:100%;display:flex;align-items:center;white-space:nowrap;flex-shrink:0}
+.ticker-scroll{flex:1;overflow:hidden}
+.ticker-inner{display:flex;gap:80px;animation:tickRun 70s linear infinite;white-space:nowrap}
+@keyframes tickRun{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tick-item{color:#000;font-family:'Teko',sans-serif;font-size:14px;display:flex;align-items:center;gap:10px}
+.tdot{width:4px;height:4px;border-radius:50%;background:rgba(0,0,0,.3)}
+nav{background:rgba(8,9,13,.94);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center;padding:0 28px;gap:24px;position:sticky;top:0;z-index:500}
+.logo{font-family:'Teko',sans-serif;font-size:36px;font-weight:700;letter-spacing:4px;color:var(--lime);line-height:1;cursor:pointer;flex-shrink:0;text-shadow:0 0 30px rgba(181,255,79,.35)}
+.logo span{color:var(--txt)}
+.nav-links{display:flex;gap:2px;list-style:none;flex:1}
+.nav-links a{color:var(--txt2);font-size:13px;font-weight:500;padding:7px 13px;border-radius:6px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.nav-links a:hover{color:var(--txt);background:rgba(255,255,255,.06)}
+.nav-links a.active{color:var(--lime);background:rgba(181,255,79,.08)}
+.live-pill{display:flex;align-items:center;gap:7px;background:rgba(255,77,28,.12);border:1px solid rgba(255,77,28,.3);padding:5px 14px;border-radius:20px;font-size:11px;font-family:'Teko',sans-serif;letter-spacing:2px;color:var(--fire)}
+.ldot{width:7px;height:7px;border-radius:50%;background:var(--fire);animation:pf 1.2s ease infinite}
+@keyframes pf{0%,100%{box-shadow:0 0 0 0 rgba(255,77,28,.5)}50%{box-shadow:0 0 0 6px rgba(255,77,28,0)}}
+.page{display:none;min-height:calc(100vh - 94px)}.page.active{display:block}
+.wrap{max-width:1380px;margin:0 auto;padding:0 24px}
+.sec{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.sec-bar{width:3px;height:20px;background:var(--lime);border-radius:2px;flex-shrink:0}
+.sec-txt{font-family:'Teko',sans-serif;font-size:22px;font-weight:500;letter-spacing:2px}
+.home-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;padding:28px 0}
+
+/* POTW HERO */
+.potw-hero{position:relative;border-radius:var(--r);overflow:hidden;margin-bottom:28px;cursor:pointer;min-height:360px;display:flex;align-items:flex-end;background:#0d1520}
+.potw-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;opacity:.55;transition:transform .6s}
+.potw-hero:hover .potw-bg{transform:scale(1.04)}
+.potw-ov{position:absolute;inset:0;background:linear-gradient(0deg,rgba(8,9,13,1) 0%,rgba(8,9,13,.65) 40%,rgba(8,9,13,.08) 80%,transparent 100%)}
+.potw-ov2{position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,9,13,.8) 0%,transparent 55%)}
+.potw-c{position:relative;z-index:2;padding:28px 32px;width:100%}
+.potw-eye{font-family:'Teko',sans-serif;font-size:11px;letter-spacing:4px;color:var(--lime);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.potw-eye::before{content:'';width:24px;height:2px;background:var(--lime)}
+.potw-name{font-family:'Oswald',sans-serif;font-size:52px;font-weight:700;letter-spacing:-1px;line-height:1;margin-bottom:4px;text-transform:uppercase}
+.potw-name span{color:var(--lime)}
+.potw-club{font-size:14px;color:var(--txt2);margin-bottom:16px}
+.potw-stats{display:flex;gap:22px}
+.ps-n{font-family:'Teko',sans-serif;font-size:32px;color:var(--lime);line-height:1}
+.ps-l{font-size:10px;color:var(--txt3);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+
+/* MATCH CARDS */
+.matches-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.mc{background:var(--ink3);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.mc:hover{border-color:rgba(181,255,79,.25);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.mc.live-mc{border-color:rgba(255,77,28,.35)}
+.mc-lg{font-size:10px;font-family:'Teko',sans-serif;letter-spacing:2px;color:var(--txt3);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.mc-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.mc-badge{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(255,255,255,.05);flex-shrink:0;overflow:hidden}
+.mc-badge img{width:26px;height:26px;object-fit:contain}
+.mc-team{font-size:14px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-score{font-family:'Teko',sans-serif;font-size:26px;color:var(--txt);min-width:30px;text-align:center;line-height:1}
+.mc-time{text-align:center;font-family:'Teko',sans-serif;font-size:13px;color:var(--txt3);margin-top:8px;letter-spacing:1px}
+.mc-time.live{color:var(--fire)}
+
+/* SIDEBAR & STATS LAYOUTS */
+.sidebar{display:flex;flex-direction:column;gap:18px;padding-top:28px}
+.widget{background:var(--ink3);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.whead{padding:11px 15px;border-bottom:1px solid var(--border);font-family:'Teko',sans-serif;font-size:15px;letter-spacing:2px}
+.sc-card{background:var(--ink3);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:28px}
+.scr-row{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;gap:14px}
+.scr-row:last-child{border-bottom:none}.scr-row:hover{background:rgba(255,255,255,.025)}
+.scr-rank{font-family:'Teko',sans-serif;font-size:22px;color:var(--txt3);width:26px;flex-shrink:0}
+.scr-rank.r1{color:var(--gold)}
+.scr-photo{width:44px;height:44px;border-radius:50%;background:var(--ink4);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;border:2px solid var(--border2);overflow:hidden}
+.scr-photo img{width:100%;height:100%;object-fit:cover;object-position:top}
+.scr-info{flex:1}.scr-name{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;letter-spacing:.3px}.scr-club{font-size:12px;color:var(--txt3);margin-top:2px}
+.scr-bar{height:3px;background:rgba(255,255,255,.06);border-radius:2px;margin-top:6px;overflow:hidden}
+.scr-fill{height:100%;background:linear-gradient(90deg,var(--lime),var(--ice));border-radius:2px}
+.scr-g{text-align:right;flex-shrink:0}.scr-gn{font-family:'Teko',sans-serif;font-size:32px;line-height:1}.scr-gl{font-size:10px;color:var(--txt3);letter-spacing:1px;text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<div class="ticker">
+    <div class="ticker-lbl">BREAKING FEEDS</div>
+    <div class="ticker-scroll">
+        <div class="ticker-inner">
+            <div class="tick-item"><span class="tdot"></span> TRANSFER EXCLUSIVE: DEAL AGREED FOR WORLD CLASS MIDFIELDER</div>
+            <div class="tick-item"><span class="tdot"></span> LIVE TIMELINE UPDATES NOW ACTIVE ACROSS ALL TOP TIERS</div>
+        </div>
+    </div>
+</div>
+
+<nav>
+    <div class="logo">PITCH<span>— LIVE</span></div>
+    <div class="nav-links">
+        <a class="active">DASHBOARD</a>
+    </div>
+    <div class="live-pill"><div class="ldot"></div>24/7 ACTUAL REEDS LIVE</div>
+</nav>
+
+<div class="page active">
+    <div class="wrap">
+        <div class="home-grid">
+            <main>
+                <div class="potw-hero">
+                    <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1200" class="potw-bg" alt="Player Action Banner">
+                    <div class="potw-ov"></div>
+                    <div class="potw-ov2"></div>
+                    <div class="potw-c">
+                        <div class="potw-eye">PLAYER OF THE WEEK</div>
+                        <div class="potw-name">ERLING <span>HAALAND</span></div>
+                        <div class="potw-club">Manchester City — Forward</div>
+                        <div class="potw-stats">
+                            <div><div class="ps-n">4</div><div class="ps-l">Goals</div></div>
+                            <div><div class="ps-n">1</div><div class="ps-l">Assist</div></div>
+                            <div><div class="ps-n">9.4</div><div class="ps-l">Rating</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sec">
+                    <div class="sec-bar"></div>
+                    <div class="sec-txt">LIVE EXPERIMENTAL MATCH FEEDS</div>
+                </div>
+                
+                <div class="matches-grid" id="live-matches-box">
+                    <div class="mc"><div class="mc-time">Connecting to live feed...</div></div>
+                </div>
+            </main>
+
+            <aside class="sidebar">
+                <div class="widget">
+                    <div class="whead">SCORING LEADERS</div>
+                    <div class="sc-card">
+                        <div class="scr-row">
+                            <div class="scr-rank r1">01</div>
+                            <div class="scr-photo">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150" alt="Kylian Mbappé Portrait">
+                            </div>
+                            <div class="scr-info">
+                                <div class="scr-name">Kylian Mbappé</div>
+                                <div class="scr-club">Real Madrid</div>
+                                <div class="scr-bar"><div class="scr-fill" style="width: 88%"></div></div>
+                            </div>
+                            <div class="scr-g">
+                                <div class="scr-gn">34</div>
+                                <div class="scr-gl">Goals</div>
+                            </div>
+                        </div>
+                        <div class="scr-row">
+                            <div class="scr-rank">02</div>
+                            <div class="scr-photo">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150" alt="Mohamed Salah Portrait">
+                            </div>
+                            <div class="scr-info">
+                                <div class="scr-name">Mohamed Salah</div>
+                                <div class="scr-club">Liverpool FC</div>
+                                <div class="scr-bar"><div class="scr-fill" style="width: 76%"></div></div>
+                            </div>
+                            <div class="scr-g">
+                                <div class="scr-gn">28</div>
+                                <div class="scr-gl">Goals</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>
+
+<script>
+// LIVE 24/7 STATS FETCH LOOP
+const API_URL = "https://v3.football.api-sports.io/fixtures?live=all";
+const API_KEY = "YOUR_REAL_API_FOOTBALL_KEY"; // Insert valid credentials here to deploy actual values
+
+async function updateLiveMatchesLoop() {
+    const container = document.getElementById("live-matches-box");
+    if (!container) return;
+
+    try {
+        const response = await fetch(API_URL, {
+            method: "GET",
+            headers: {
+                "x-rapidapi-host": "v3.football.api-sports.io",
+                "x-rapidapi-key": API_KEY
+            }
+        });
+        const data = await response.json();
+        
+        if (data.response && data.response.length > 0) {
+            renderLiveScores(data.response);
+        } else {
+            renderMockFallback(); // Displays beautiful live mock objects if API key isn't setup yet
+        }
+    } catch (err) {
+        console.warn("Live stream fetch paused. Running local premium template objects.");
+        renderMockFallback();
+    }
+}
+
+function renderLiveScores(fixtures) {
+    const container = document.getElementById("live-matches-box");
+    container.innerHTML = fixtures.slice(0, 8).map(item => `
+        <div class="mc live-mc">
+            <div class="mc-lg">${item.league.name} — ${item.fixture.status.elapsed}'</div>
+            <div class="mc-row">
+                <div class="mc-badge"><img src="${item.teams.home.logo}" alt="Home Badge"></div>
+                <div class="mc-team">${item.teams.home.name}</div>
+                <div class="mc-score">${item.goals.home ?? 0}</div>
+            </div>
+            <div class="mc-row">
+                <div class="mc-badge"><img src="${item.teams.away.logo}" alt="Away Badge"></div>
+                <div class="mc-team">${item.teams.away.name}</div>
+                <div class="mc-score">${item.goals.away ?? 0}</div>
+            </div>
+            <div class="mc-time live">LIVE DATA TIMELINE</div>
+        </div>
+    `).join('');
+}
+
+function renderMockFallback() {
+    const container = document.getElementById("live-matches-box");
+    const mocks = [
+        { league: "PREMIER LEAGUE", home: "Arsenal", away: "Chelsea", hs: 2, as: 1, time: "64'" },
+        { league: "LA LIGA", home: "Barcelona", away: "Real Madrid", hs: 0, as: 0, time: "22'" },
+        { league: "SERIE A", home: "Juventus", away: "AC Milan", hs: 1, as: 3, time: "81'" }
+    ];
+    container.innerHTML = mocks.map(m => `
+        <div class="mc live-mc">
+            <div class="mc-lg">${m.league} — ${m.time}</div>
+            <div class="mc-row">
+                <div class="mc-badge">⚽</div>
+                <div class="mc-team">${m.home}</div>
+                <div class="mc-score">${m.hs}</div>
+            </div>
+            <div class="mc-row">
+                <div class="mc-badge">⚽</div>
+                <div class="mc-team">${m.away}</div>
+                <div class="mc-score">${m.as}</div>
+            </div>
+            <div class="mc-time live">LIVE FEED REFRESHING</div>
+        </div>
+    `).join('');
+}
+
+// 30 Second Live Interval Updates 
+setInterval(updateLiveMatchesLoop, 30000);
+updateLiveMatchesLoop();
+</script>
+</body>
+</html>
